@@ -5,34 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <title>五倍券 - 加碼券抽籤中獎查詢</title>
 <style type="text/css">
-#wrapper{
-    padding: 20px;
-    width: 100%; max-width: 450px;
-    margin-left: auto; margin-right: auto;
-}
-#wrapper input[type=text]{
-    padding: 5px 10px;
-}
-#seles{
-    line-height: 2;
-    display: flex;
-    flex-wrap: wrap;
-}
-#seles .item{
-    margin-right: 10px;
-}
+#wrapper{ padding: 20px; width: 100%; max-width: 450px; margin-left: auto; margin-right: auto;}
+#wrapper input[type=text]{ padding: 5px 10px;}
+#seles{ line-height: 2; display: flex; flex-wrap: wrap;}
+#seles .item{ margin-right: 10px;}
+.rep{ font-style: italic; color:#cc0000; margin-left: 10px;;}
 </style>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-
-
 <div id="wrapper">
-    <h3 style="text-align: center;">五倍券加碼券抽籤中獎查詢</h3>
+    <h2 style="text-align: center;">五倍券加碼券抽籤中獎查詢</h2>
     <form>
         <div style="margin-bottom:10px;">
             <label>身分證後3碼：</label>
-            <input type="text" name="uid" id="uid" placeholder="id numbers" maxlength="3" onkeyup="value=value.replace(/[^\d.]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d.]/g,''))">
+            <input type="text" name="uid" id="uid" placeholder="輸入數字" maxlength="3" onkeyup="value=value.replace(/[^\d.]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d.]/g,''))">
         </div>
         <div style="margin-bottom:10px;">
             <label>綁定方式：</label>
@@ -45,8 +32,8 @@
             <div id="seles"></div>
         </div>
 
-        <div style="text-align:right">
-            <button type="submit" style="font-size: 20px;padding: 8px 20px;">開始查詢</button>
+        <div style="text-align:center;padding:10px;margin:10px auto;border-bottom:1px solid #f0f0f0;">
+            <button type="submit" style="font-size: 20px;padding: 5px 20px;">開始查詢</button>
         </div>
     </form>
     <div id="message"></div>
@@ -98,28 +85,32 @@ $(function(){
             return false;
         }
 
-        var mycop = [], msg = '';
+        var mycop = [], msg = [];
+        $('#message').html('');
 
         $.each(week,function(index,item){
             var rs = '';
             $.each(coups,function(i,name){
                 if( item[name] ){
-                    console.log(name,item[name]);
-                    if(  !mycop.includes(name) && (item[name].includes(id2) || item[name].includes(id3)) ){
-                        mycop[index] = rs = name;
-                        return false;
+
+                    if( item[name].includes(id2) || item[name].includes(id3) ){
+                        if( !mycop[index] && !mycop.includes(name) ){
+                            mycop[index] = name;
+                        }else{
+                            rs += '<del class="rep">'+name+'(重複)</del>';
+                        }
+                        //return false;
                     }
                 }
             });
-            if( rs == '') mycop[index] = '(未中)';
+
+            if( !mycop[index] ){
+                mycop[index] = '(未中)';
+            }
+
+            $('<div>第 '+(index+1)+' 週：'+mycop[index]+rs+'</div>').appendTo($('#message'));
         });
 
-        console.log('get',mycop);
-        $.each(mycop,function(k,m){
-            msg += "第 "+(k+1)+" 週："+m+"<br>";
-        });
-
-        $('#message').html('<hr>'+msg);
         return false;
     });
 });
