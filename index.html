@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<title>五倍券 - 加碼券抽籤中獎查詢</title>
+<style type="text/css">
+#wrapper{
+    padding: 20px;
+    width: 100%; max-width: 450px;
+    margin-left: auto; margin-right: auto;
+}
+#wrapper input[type=text]{
+    padding: 5px 10px;
+}
+#seles{
+    line-height: 2;
+    display: flex;
+    flex-wrap: wrap;
+}
+#seles .item{
+    margin-right: 10px;
+}
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+
+<div id="wrapper">
+    <h3 style="text-align: center;">五倍券加碼券抽籤中獎查詢</h3>
+    <form>
+        <div style="margin-bottom:10px;">
+            <label>身分證後3碼：</label>
+            <input type="text" name="uid" id="uid" placeholder="id numbers" maxlength="3" onkeyup="value=value.replace(/[^\d.]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d.]/g,''))">
+        </div>
+        <div style="margin-bottom:10px;">
+            <label>綁定方式：</label>
+            <input type="radio" name="type" id="type_0" value="0" checked="checked"><label for="type_0">數位</label>
+            <input type="radio" name="type" id="type_1" value="1"><label for="type_1">紙本</label>
+        </div>
+
+        <div>
+            <label>抽籤種類：</label>
+            <div id="seles"></div>
+        </div>
+
+        <div style="text-align:right">
+            <button type="submit" style="font-size: 20px;padding: 8px 20px;">開始查詢</button>
+        </div>
+    </form>
+    <div id="message"></div>
+</div>
+
+<script>
+var coupon = ['國旅券','i原券','農遊券','藝fun券-數位','藝fun券-紙本','動遊券','客庄券','地方創生券'];
+var week = new Array();
+week[0] = {
+    '國旅券':['21','32','67','97','98','410'],
+    'i原券':['64','85'],
+    '農遊券':['32','54','89','152','453','597'],
+    '藝fun券-數位':['07','11','15','19','30','73','96','98'],
+    '藝fun券-紙本':['08','14','23','36','37','39','75','79'],
+    '動遊券':['13','19','55','71','93','97','381','453','644','734','985'],
+    '客庄券':['81','900'],
+    '地方創生券':['081','089','105','188','335','358','367','396','441','467','521','594','798','912','941']
+};
+
+$(function(){
+    show();
+    $('input[type=radio]').on('click',show);
+
+    $('form').submit(function(){
+        var arr = $(this).serializeArray();
+        var my_val = {};
+        for(i in arr){
+            if ( arr[i]['name'].indexOf('[]') > 0 ) {
+                if( !my_val['coup'] ) my_val['coup'] = [];
+                my_val['coup'].push(arr[i]['value']);
+            }else{
+                my_val[arr[i]['name']] = arr[i]['value'];
+            }
+        }
+        //console.log(my_val);
+
+        if( my_val['uid'] ){
+            var uid = my_val['uid'], id2 = uid.substring(uid.length - 2), id3 = uid.substring(uid.length - 3);
+        }else{
+            $('#uid').focus();
+            alert('請填入身分證後3碼');
+            return false;
+        }
+
+        if( my_val['coup'] && my_val['coup'].length ){
+            var coups = my_val['coup'];
+        }else{
+            alert('需至少選擇一種抽籤種類');
+            return false;
+        }
+
+        var mycop = [], msg = '';
+
+        $.each(week,function(index,item){
+            var rs = '';
+            $.each(coups,function(i,name){
+                if( item[name] ){
+                    console.log(name,item[name]);
+                    if(  !mycop.includes(name) && (item[name].includes(id2) || item[name].includes(id3)) ){
+                        mycop[index] = rs = name;
+                        return false;
+                    }
+                }
+            });
+            if( rs == '') mycop[index] = '(未中)';
+        });
+
+        console.log('get',mycop);
+        $.each(mycop,function(k,m){
+            msg += "第 "+(k+1)+" 週："+m+"<br>";
+        });
+
+        $('#message').html('<hr>'+msg);
+        return false;
+    });
+});
+
+
+function show(){
+    $('#seles').html('');
+    $.each(coupon ,function(index,val){
+        var t = $('input[name=type]:checked').val();
+        if( t == 0 && val == '藝fun券-紙本' )  return;
+        if( t == 1 && val == '藝fun券-數位' )  return;
+
+        var div = $('<div>'), lab = $('<label>'), input = $('<input>');
+        lab.attr('for',val);
+        input.attr('id',val).attr('type','checkbox').attr('name','coup[]').attr('value',val);
+        input.appendTo(div);
+        lab.text(val).appendTo(div);
+        div.addClass('item').appendTo( $('#seles') );
+    });
+}
+
+
+</script>
+
+</body>
+</html>
